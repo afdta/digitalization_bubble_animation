@@ -1,7 +1,6 @@
 library(tidyverse)
 
-
-dat <- read_csv("/home/alec/Projects/Brookings/digitalization/build/data/initial_handoff/sifan/ForAlec.csv")
+dat <- read_xlsx("/home/alec/Projects/Brookings/digitalization/build/data/Summary Data_RevisedOct1.xlsx", sheet=)
 
 head(dat)
 table(dat$high02)
