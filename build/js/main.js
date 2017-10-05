@@ -1,6 +1,8 @@
 import dir from "../../../js-modules/rackspace.js";
 import degradation from "../../../js-modules/degradation.js";
 
+import bubble_graphic from './bubble_graphic.js';
+
 
 //main function
 function main(){
@@ -8,7 +10,7 @@ function main(){
 
   //local
   dir.local("./");
-  //dir.add("dirAlias", "path/to/dir");
+  dir.add("data", "./build/data/initial_handoff/sifan");
   //dir.add("dirAlias", "path/to/dir");
 
 
@@ -20,7 +22,7 @@ function main(){
 
   //browser degradation
   if(compat.browser()){
-    //run app...
+    bubble_graphic();
   }
 
 
