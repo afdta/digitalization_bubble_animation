@@ -2,6 +2,7 @@ import dir from "../../../js-modules/rackspace.js";
 import degradation from "../../../js-modules/degradation.js";
 
 import bubble_graphic from './bubble_graphic.js';
+import opening from './opening.js';
 
 
 //main function
@@ -22,7 +23,8 @@ function main(){
 
   //browser degradation
   if(compat.browser()){
-    bubble_graphic();
+    opening();
+    //bubble_graphic();
   }
 
 
