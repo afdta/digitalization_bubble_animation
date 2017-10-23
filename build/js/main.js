@@ -20,10 +20,12 @@ function main(){
   //dir.add("dirAlias", "rackspace-slug/path/to/dir");
   var compat = degradation(document.getElementById("metro-interactive"));
 
+  var wrap = d3.select("#metro-interactive");
 
   //browser degradation
   if(compat.browser()){
-    opening();
+  
+    opening(document.getElementById("opening-animation"));
     //bubble_graphic();
   }
 

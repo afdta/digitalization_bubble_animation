@@ -104,13 +104,172 @@ function degradation(root){
 
 //viewport dimensions
 
-function opening(){
-	var mainwrap = d3.select("#metro-interactive");
+//v2.0 developed for metro monitor
+//revised to be more modular - each event gets a window event listener, rather than a collection
+//the user registers scroll and activate listeners separately, scroll methods will not execute if there is an activation method yet to run
 
-	var outer_wrap = mainwrap.append("div").style("width","100%").style("max-width","1400px").style("margin","1rem auto");
-	var textpan = outer_wrap.append("div").classed("big-text-scroll",true).style("width","30%").style("float","left");
+//events: activate and scroll 
 
-	var wrap = outer_wrap.append("div").style("width","70%").style("height","50vh").style("float","left");
+//to do: address edge case where asynchronous load pushes unactivated element into view. no scroll takes place to activate it
+//consider appending a note to each container element, but should we change positioning of parent element?
+
+//scroll collection constructor
+function onScroll(element){
+	if(arguments.length > 0){
+		this.element = element;
+	}
+	this.on_activate = null;
+	this.on_scroll = null;
+
+	this.activated = false;
+
+	//determines activation zone. the default, 0.2, implies the middle 60% of the page is the "activation zone" 
+	//the activate method will not be called when the top of element is 
+	this.top_buffer = 0.2;
+	this.bot_buffer = 0.2;
+
+	var self = this;
+	var decorated_scroll_listener = function(){
+		self.scroll_listener();
+
+		//remove the scroll event if it is no longer necessary
+		/*try{
+			if(self.on_scroll === null && self.activated){
+				window.removeEventListener("scroll", decorated_scroll_listener);
+			}
+		}
+		catch(e){
+			//ho-op
+		}*/
+	};
+
+	//attach scroll listener with setTimeout 0 so that synchronous code, like registering activate/viewing listeners can execute first
+	setTimeout(function(){
+		window.addEventListener("scroll", decorated_scroll_listener);
+	}, 0);
+}
+
+onScroll.prototype.buffer = function(top_buffer, bot_buffer){
+	if(arguments.length==0){
+		return [this.top_buffer, this.bot_buffer];
+	}
+	else if(arguments.length==1){
+		this.top_buffer = top_buffer;
+		this.bot_buffer = top_buffer;
+		return this;
+	}	
+	else{
+		this.top_buffer = top_buffer;
+		this.bot_buffer = bot_buffer;
+		return this;
+	}
+
+};
+
+onScroll.prototype.element = function(element){
+	if(arguments.length > 0){
+		this.element = element;
+		return this;
+	}
+	else{
+		return this.element;
+	}
+};
+
+onScroll.prototype.get_box = function(){
+	try{
+		var box = this.element.getBoundingClientRect();
+
+		var top = box.top;
+		var bottom = box.bottom;
+		var middle = top + ((bottom-top)/2);
+
+		var pos = {top:top, middle:middle, bottom:bottom};
+	}
+	catch(e){
+		var pos = null;
+	}
+	return pos;
+};
+
+//register activation function
+onScroll.prototype.activate = function(fn, reactivate_when_in_view){
+	this.reactivate_when_in_view = !!reactivate_when_in_view;
+	if(arguments.length > 0){
+		this.on_activate = fn;
+			var self = this;
+			setTimeout(function(){self.scroll_listener();}, 0); //try to immediately activate
+		return this;
+	}
+	else{
+		return this.on_activate;
+	}
+};
+
+//register scrolling function
+onScroll.prototype.scroll = function(fn){
+	if(arguments.length > 0){
+		this.on_scroll = fn;
+		return this;
+	}
+	else{
+		return this.on_scroll;
+	}
+};
+onScroll.prototype.scrolling = onScroll.prototype.scroll;
+
+onScroll.prototype.scroll_listener = function(){
+	var box = this.get_box();
+	var window_height = Math.max(document.documentElement.clientHeight, (window.innerHeight || 0));
+
+	var activate_zone = [window_height*this.top_buffer, window_height*(1-this.bot_buffer)];	
+	var in_activate_zone = !(box.bottom < activate_zone[0] || box.top > activate_zone[1]);
+
+	console.log(this.top_buffer);
+	
+	//first, attempt to execute activate method, then scroll method--never at the same time
+	if(!this.activated && this.on_activate !== null){
+		if(box==null || window_height==0){
+			this.on_activate({top:0, middle:0, bottom:0}, window_height);
+			this.activated = true;
+		}
+		else if(in_activate_zone){
+			this.on_activate(box, window_height);
+			this.activated = true;
+		}
+	}
+	else if(this.on_scroll !== null && in_activate_zone){
+		this.on_scroll(box, window_height);
+	}
+
+	if(!in_activate_zone && this.activated && this.reactivate_when_in_view){
+		this.activated = false;
+	}
+
+};
+
+//simulate a croll event
+onScroll.prototype.tick = function(duration){
+	var self = this;
+	var dur = arguments.length > 0 ? duration : 0;
+	setTimeout(function(){self.scroll_listener();},0);
+	return this;
+};
+
+function waypoint(element){
+	var os = new onScroll(element);
+	return os;
+}
+
+function opening(container){
+	
+	var outer_wrap = d3.select(container).style("width","100%").style("max-width","1200px").style("margin","3rem auto")
+		.style("border","1px solid #aaaaaa").style("border-width","1px 0px");
+
+	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center",true).append("p").append("p").text(" ")
+			.style("min-height","3rem");
+
+	var wrap = outer_wrap.append("div").style("width","100%").style("height","50vh");
 
 	var colors = {low:"#0d73d6", medium:"#66c2a5", high:"#ffd92f"};
 
@@ -121,15 +280,54 @@ function opening(){
 	var group16 = svg.append("svg").attr("width","50%").attr("height","100%").attr("x","50%");
 
 	var pause_duration = 1000; //use | to add pause
-	var circle_radius = 7;
+	var circle_radius = 10;
 	var pulse_duration = 2500;
 
-	var rscale = d3.scaleSqrt().domain([0,1]).range([0,75]);
+	var rscale = d3.scaleSqrt().domain([0,1]).range([0,circle_radius*9]);
 	var yscale = d3.scaleLinear().domain([0,0.6]).range([90,10]);
 
 	var dom = {};
 
+		function teaser(){
+			var stop_pulse = false;
+			var teaser_group = group02.append("g");
+			var pulse_group = teaser_group.append("g");
+			var marker = teaser_group.append("circle").attr("r",circle_radius).attr("cx","50%").attr("cy",yscale(0.557)+"%").attr("fill", colors.low);
+			
+			var cu = pulse_group.selectAll("circle").data(d3.range(1,6));
+			cu.exit().remove();
+			var c = cu.enter().append("circle").style("opacity","0").attr("cx","50%").attr("cy",yscale(0.557)+"%").attr("fill", colors.low).attr("r", circle_radius)
+				.merge(cu).attr("r", circle_radius-1).style("opacity","0.75");
+
+				var pulse = function(){
+
+					c.transition()
+					.delay(function(d,i){return i*pulse_duration})
+					.duration(pulse_duration)
+					.attr("r", circle_radius*4).style("opacity","0")
+					.on("end", function(d,i){
+						d3.select(this).attr("r", circle_radius-1).style("opacity","1");
+
+						if(i==4 && !stop_pulse){
+							pulse();
+						}
+					});
+				};
+				pulse();
+
+			var stop = function(){
+				stop_pulse = true;
+				c.interrupt();
+				teaser_group.remove();
+			};
+
+			return stop;
+		}
+
+		var stop_teaser = teaser();	
+
 	function scene1(nextSceneDelay){
+		stop_teaser();
 		var text = "Of the occupations we track,|56% required low digital skills in 2002.";
 		var text_array = text.split("");
 		var value = 0.557;
@@ -146,7 +344,7 @@ function opening(){
 			var c = pulse_group.selectAll("circle").data(d3.range(1,6));
 			c.exit().remove();
 			c.enter().append("circle").style("opacity","0").attr("cx","50%").attr("cy",yscale(value)+"%").attr("fill", colors.low).attr("r", circle_radius)
-				.merge(c).attr("r", circle_radius).style("opacity","0.75")
+				.merge(c).attr("r", circle_radius-1).style("opacity","0.75")
 					.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
@@ -161,9 +359,8 @@ function opening(){
 		pulse();
 
 
-		textpan.selectAll("p").remove();
-		var p = textpan.append("p");
-		var spans = p.selectAll("span").data(text_array);
+		textpan.selectAll("span").remove();		
+		var spans = textpan.selectAll("span").data(text_array);
 		spans.enter().append("span").style("opacity","0")
 					.text(function(d){
 						return d=="|" ? " " : d;
@@ -198,7 +395,7 @@ function opening(){
 			var c = pulse_group.selectAll("circle").data(d3.range(1,6));
 			c.exit().remove();
 			c.enter().append("circle").style("opacity","0").attr("cx","50%").attr("cy",yscale(value)+"%").attr("fill", colors[color]).attr("r", circle_radius)
-				.merge(c).attr("r", circle_radius).style("opacity","0.75")
+				.merge(c).attr("r", circle_radius-1).style("opacity","0.75")
 					.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
@@ -213,9 +410,8 @@ function opening(){
 		pulse();
 
 
-		textpan.selectAll("p").remove();
-		var p = textpan.append("p");
-		var spans = p.selectAll("span").data(text_array);
+		textpan.selectAll("span").remove();		
+		var spans = textpan.selectAll("span").data(text_array);
 		spans.enter().append("span").style("opacity","0")
 					.text(function(d){
 						return d=="|" ? " " : d;
@@ -251,7 +447,7 @@ function opening(){
 			var c = pulse_group.selectAll("circle").data(d3.range(1,6));
 			c.exit().remove();
 			c.enter().append("circle").style("opacity","0").attr("cx","50%").attr("cy",yscale(value)+"%").attr("fill", colors[color]).attr("r", circle_radius)
-				.merge(c).attr("r", circle_radius).style("opacity","0.75")
+				.merge(c).attr("r", circle_radius-1).style("opacity","0.75")
 					.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
@@ -266,9 +462,8 @@ function opening(){
 		pulse();
 
 
-		textpan.selectAll("p").remove();
-		var p = textpan.append("p");
-		var spans = p.selectAll("span").data(text_array);
+		textpan.selectAll("span").remove();		
+		var spans = textpan.selectAll("span").data(text_array);
 		spans.enter().append("span").style("opacity","0")
 					.text(function(d){
 						return d=="|" ? " " : d;
@@ -297,9 +492,8 @@ function opening(){
 
 		dom.mid_group = group16.append("g");
 
-		textpan.selectAll("p").remove();
-		var p = textpan.append("p");
-		var spans = p.selectAll("span").data(text_array);
+		textpan.selectAll("span").remove();		
+		var spans = textpan.selectAll("span").data(text_array);
 		spans.enter().append("span").style("opacity","0")
 					.text(function(d){
 						return d=="|" ? " " : d;
@@ -330,7 +524,7 @@ function opening(){
 			var c = pulse_group.selectAll("circle").data(d3.range(1,6));
 			c.exit().remove();
 			c.enter().append("circle").style("opacity","0").attr("cx","50%").attr("cy",yscale(value)+"%").attr("fill", colors[color]).attr("r", circle_radius)
-				.merge(c).attr("r", circle_radius).style("opacity","0.75")
+				.merge(c).attr("r", circle_radius-1).style("opacity","0.75")
 					.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
@@ -375,9 +569,8 @@ function opening(){
 
 		dom.mid_group = group16.append("g");
 
-		textpan.selectAll("p").remove();
-		var p = textpan.append("p");
-		var spans = p.selectAll("span").data(text_array);
+		textpan.selectAll("span").remove();		
+		var spans = textpan.selectAll("span").data(text_array);
 		spans.enter().append("span").style("opacity","0")
 					.text(function(d){
 						return d=="|" ? " " : d;
@@ -408,7 +601,7 @@ function opening(){
 			var c = pulse_group.selectAll("circle").data(d3.range(1,6));
 			c.exit().remove();
 			c.enter().append("circle").style("opacity","0").attr("cx","50%").attr("cy",yscale(value)+"%").attr("fill", colors[color]).attr("r", circle_radius)
-				.merge(c).attr("r", circle_radius).style("opacity","0.75")
+				.merge(c).attr("r", circle_radius-1).style("opacity","0.75")
 					.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
@@ -452,9 +645,8 @@ function opening(){
 
 		dom.mid_group = group16.append("g");
 
-		textpan.selectAll("p").remove();
-		var p = textpan.append("p");
-		var spans = p.selectAll("span").data(text_array);
+		textpan.selectAll("span").remove();		
+		var spans = textpan.selectAll("span").data(text_array);
 		spans.enter().append("span").style("opacity","0")
 					.text(function(d){
 						return d=="|" ? " " : d;
@@ -485,7 +677,7 @@ function opening(){
 			var c = pulse_group.selectAll("circle").data(d3.range(1,6));
 			c.exit().remove();
 			c.enter().append("circle").style("opacity","0").attr("cx","50%").attr("cy",yscale(value)+"%").attr("fill", colors[color]).attr("r", circle_radius)
-				.merge(c).attr("r", circle_radius).style("opacity","0.75")
+				.merge(c).attr("r", circle_radius-1).style("opacity","0.75")
 					.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
@@ -517,10 +709,11 @@ function opening(){
 											 });											 
 		}
 
-	}	
+	}
 
-	//kick-off
-	setTimeout(scene1, 10);
+	waypoint(container).activate(function(){
+		scene1();
+	}).buffer(-0.05, 0.65);	
 
 }
 
@@ -539,10 +732,12 @@ function main(){
   //dir.add("dirAlias", "rackspace-slug/path/to/dir");
   var compat = degradation(document.getElementById("metro-interactive"));
 
+  var wrap = d3.select("#metro-interactive");
 
   //browser degradation
   if(compat.browser()){
-    opening();
+  
+    opening(document.getElementById("opening-animation"));
     //bubble_graphic();
   }
 
