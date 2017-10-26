@@ -1,13 +1,15 @@
 import dimensions from '../../../js-modules/dimensions.js';
 import waypoint from "../../../js-modules/on-scroll2.js";
 
+//to do: put longest text string in title box -- set visibility to hidden on it and all other titles get put in absolutely positioned box on top
+
 export default function opening(container){
 	
 	var outer_wrap = d3.select(container).style("width","100%").style("max-width","1200px").style("margin","3rem auto")
 		.style("border","1px solid #aaaaaa").style("border-width","1px 0px");
 
-	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center",true).append("p").append("p").text(" ")
-			.style("min-height","3rem");
+	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center",true).append("p").text(" ")
+			.style("min-height","4em");
 
 	var wrap = outer_wrap.append("div").style("width","100%").style("height","50vh");
 
@@ -23,7 +25,7 @@ export default function opening(container){
 	var circle_radius = 10;
 	var pulse_duration = 2500;
 
-	var rscale = d3.scaleSqrt().domain([0,1]).range([0,circle_radius*9]);
+	var rscale = d3.scaleSqrt().domain([0,0.6]).range([0,circle_radius*9]);
 	var yscale = d3.scaleLinear().domain([0,0.6]).range([90,10]);
 
 	var dom = {};
@@ -68,7 +70,7 @@ export default function opening(container){
 
 	function scene1(nextSceneDelay){
 		stop_teaser();
-		var text = "Of the occupations we track,|56% required low digital skills in 2002.";
+		var text = "Of the occupations we track,|56% required low digital skills in 2002. [To do: add annotation to graphic]";
 		var text_array = text.split("");
 		var value = 0.557;
 		var color = "low";
@@ -119,7 +121,7 @@ export default function opening(container){
 	}
 
 	function scene2(nextSceneDelay){
-		var text = "Meanwhile, nearly 40 percent required medium digital skills.";
+		var text = "Meanwhile, nearly 40 percent required medium digital skills. [To do: Tweak timing of transitions.]";
 		var text_array = text.split("");
 		var value = 0.395;
 		var color = "medium";

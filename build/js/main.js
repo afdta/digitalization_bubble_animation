@@ -3,7 +3,9 @@ import degradation from "../../../js-modules/degradation.js";
 
 import bubble_graphic from './bubble_graphic.js';
 import opening from './opening.js';
+import add_link_icon from './add_link_icon.js';
 
+import metro_map from './metro_water_map.js';
 
 //main function
 function main(){
@@ -11,9 +13,11 @@ function main(){
 
   //local
   dir.local("./");
-  dir.add("data", "./build/data/initial_handoff/sifan");
+  dir.add("data", "build/data/initial_handoff/sifan");
+  dir.add("assets", "assets");
   //dir.add("dirAlias", "path/to/dir");
 
+  add_link_icon();
 
   //production data
   //dir.add("dirAlias", "rackspace-slug/path/to/dir");
@@ -26,7 +30,10 @@ function main(){
   if(compat.browser()){
   
     opening(document.getElementById("opening-animation"));
-    //bubble_graphic();
+    
+    bubble_graphic();
+
+    metro_map(document.getElementById("metro-map"));
   }
 
 

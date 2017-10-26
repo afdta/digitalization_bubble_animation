@@ -1,9 +1,29 @@
 /*app-specific*/
 
-#metro-interactive div.big-text-scroll p{
+#metro-interactive div.big-text-scroll p:first-child{
   font-size:1.25rem;
-  line-height:1.66rem;
+  line-height:1.5em;
   margin:1em 0em 0em 0em;
+  font-weight:bold;
+}
+
+#metro-interactive div.big-text-scroll p:first-child span{
+  background-color:#0d73d6;
+  color:#ffffff;
+  margin:0px 0px 0px 0px;
+  padding:5px 0px 5px 0px;
+}
+
+#metro-interactive div.big-text-scroll p:first-child span:first-child{
+  padding-left:5px;
+}
+
+#metro-interactive div.big-text-scroll p:first-child span:last-child{
+  padding-right:5px;
+}
+
+#metro-interactive svg{
+  overflow:visible;
 }
 
 
@@ -55,6 +75,17 @@
 
 #metro-interactive a:hover{
   border-bottom: 1px solid #dc2a2a;
+}
+
+#metro-interactive a.blue-link{
+  border-bottom: 0px dotted #0d73d6;
+  color: #0d73d6;
+  text-decoration:none;
+  cursor:pointer;
+}
+
+#metro-interactive a.blue-link:hover{
+  border-bottom: 1px solid #0d73d6;
 }
 
 /*for unobtrusive links within document*/
