@@ -1,25 +1,30 @@
 /*app-specific*/
 
+#metro-interactive div.big-text-scroll{
+  margin-top:2rem;
+}
+
 #metro-interactive div.big-text-scroll p:first-child{
   font-size:1.25rem;
-  line-height:1.5em;
-  margin:1em 0em 0em 0em;
+  line-height:1.75em;
+  margin:0em 0em 0em 0em;
   font-weight:bold;
 }
 
 #metro-interactive div.big-text-scroll p:first-child span{
-  background-color:#0d73d6;
-  color:#ffffff;
+  color:#0d73d6;
+  /*color:#dc2a2a;*/
+  border-bottom:1px solid #0d73d6;
   margin:0px 0px 0px 0px;
-  padding:5px 0px 5px 0px;
+  padding:7px 0px 2px 0px;
 }
 
 #metro-interactive div.big-text-scroll p:first-child span:first-child{
-  padding-left:5px;
+  padding-left:0px;
 }
 
 #metro-interactive div.big-text-scroll p:first-child span:last-child{
-  padding-right:5px;
+  padding-right:0px;
 }
 
 #metro-interactive svg{
@@ -56,6 +61,10 @@
   padding:0em 4rem;
 	max-width: 800px;
 	min-width: 300px;
+}
+
+#metro-interactive .col-center.big-col{
+  max-width: 1200px;
 }
 
 #metro-interactive .col-center.main-finding-wrap{
@@ -103,9 +112,15 @@
 /*text*/
 #metro-interactive p:not(.brook), #metro-interactive li, #metro-interactive text, #metro-interactive select{
   font-size:16px;
-  font-family: franklin-gothic-urw, arial, helvetica, sans-serif;
+  /*font-family: franklin-gothic-urw, arial, helvetica, sans-serif;*/
+  font-family:Georgia, Times, serif;
   margin:0em 0em 1em 0em;
   color: #111111;
+  line-height:1.5em;
+}
+
+#metro-interactive .makesans p, #metro-interactive .makesans text{
+  font-family: franklin-gothic-urw, arial, helvetica, sans-serif;
 }
 
 #metro-interactive text{
@@ -134,7 +149,8 @@
   -moz-user-select: none;
   -ms-user-select: none;
   -webkit-user-select:none;
-  user-select: none;  
+  user-select: none; 
+  pointer-events:none; 
 }
 
 #metro-interactive p.section-title-mpp{
@@ -307,7 +323,7 @@ div.subway-tile{
   padding:0% 1% 0% 0%;
   margin:1em 0em;
   float:left;
-  height:400px;
+  height:200px;
   overflow:hidden;
   position:relative;
 }
@@ -327,7 +343,7 @@ div.subway-tile > div.tile-header{
 
 div.subway-tile > div.tile-header:before{
   position:absolute;
-  top:0.75em;
+  top:0em;
   border-top:1px solid #0d73d6;
   width:100%;
   width:calc(100% - 1em);
@@ -338,10 +354,20 @@ div.subway-tile > div.tile-header:before{
 
 
 div.subway-tile > div.tile-header > div.dot, div.subway-tile-dot{
-  height:1.5em;
-  width:1.5em;
-  border-radius:0.75em;
-  background-color:#0d73d6;
+  height:1em;
+  width:1em;
+  left:-0.5em;
+
+
+    -ms-transform: rotate(7deg); /* IE 9 */
+    -webkit-transform: rotate(7deg); /* Chrome, Safari, Opera */
+    transform: rotate(45deg);
+
+  border-radius:0em;
+
+  border: 1px solid #0d73d6;;
+  border-width: 0px 0px 0px 1px;
+  
   position:relative;
   z-index:10;
 }
@@ -454,7 +480,7 @@ div.subway-tile.click-for-more-info .more-info-available{
 
   div.subway-tile, div.five-wide > div.subway-tile{
     width:50%;
-    height:400px;
+    height:250px;
   }
 
   div.subway-tile:nth-child(odd) {

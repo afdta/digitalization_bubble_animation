@@ -6,14 +6,15 @@ import waypoint from "../../../js-modules/on-scroll2.js";
 export default function opening(container){
 	
 	var outer_wrap = d3.select(container).style("width","100%").style("max-width","1200px").style("margin","3rem auto")
-		.style("border","1px solid #aaaaaa").style("border-width","1px 0px");
+		.style("border","3px solid #aaaaaa").style("border-width","1px 0px");
 
-	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center",true).append("p").text(" ")
+	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center big-col",true).append("p").text(" ")
 			.style("min-height","4em");
 
 	var wrap = outer_wrap.append("div").style("width","100%").style("height","50vh");
 
 	var colors = {low:"#0d73d6", medium:"#66c2a5", high:"#ffd92f"};
+	var colors = {low:"#a4c7f2", medium:"#4472c4", high:"#053769"};
 
 	var svg = wrap.append("svg").attr("width","100%").attr("height","100%");
 
@@ -23,7 +24,7 @@ export default function opening(container){
 
 	var pause_duration = 1000; //use | to add pause
 	var circle_radius = 10;
-	var pulse_duration = 2500;
+	var pulse_duration = 1500;
 
 	var rscale = d3.scaleSqrt().domain([0,0.6]).range([0,circle_radius*9]);
 	var yscale = d3.scaleLinear().domain([0,0.6]).range([90,10]);
@@ -46,7 +47,7 @@ export default function opening(container){
 					c.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
-					.attr("r", circle_radius*4).style("opacity","0")
+					.attr("r", circle_radius*3).style("opacity","0")
 					.on("end", function(d,i){
 						d3.select(this).attr("r", circle_radius-1).style("opacity","1");
 
@@ -70,12 +71,12 @@ export default function opening(container){
 
 	function scene1(nextSceneDelay){
 		stop_teaser();
-		var text = "Of the occupations we track,|56% required low digital skills in 2002. [To do: add annotation to graphic]";
+		var text = "56 percent of the jobs studied required low digital skills in 2002.";
 		var text_array = text.split("");
 		var value = 0.557;
 		var color = "low";
 		var nextScene = scene2;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.low_group = group02.append("g");
 
@@ -109,7 +110,7 @@ export default function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -121,12 +122,12 @@ export default function opening(container){
 	}
 
 	function scene2(nextSceneDelay){
-		var text = "Meanwhile, nearly 40 percent required medium digital skills. [To do: Tweak timing of transitions.]";
+		var text = "Meanwhile, nearly 40 percent required medium digital skills.";
 		var text_array = text.split("");
 		var value = 0.395;
 		var color = "medium";
 		var nextScene = scene3;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group02.append("g");
 
@@ -160,7 +161,7 @@ export default function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -178,7 +179,7 @@ export default function opening(container){
 		var value = 0.048;
 		var color = "high";
 		var nextScene = scene4;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group02.append("g");
 
@@ -212,7 +213,7 @@ export default function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -225,12 +226,12 @@ export default function opening(container){
 	}
 
 	function scene4(nextSceneDelay){
-		var text = "But by 2016, the share of jobs requiring high digital skills had jumped to 23%.";
+		var text = "But by 2016, the share of jobs requiring high digital skills had jumped to 23 percent.";
 		var text_array = text.split("");
 		var value = 0.230;
 		var color = "high";
 		var nextScene = scene5;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group16.append("g");
 
@@ -242,7 +243,7 @@ export default function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -307,7 +308,7 @@ export default function opening(container){
 		var value = 0.475;
 		var color = "medium";
 		var nextScene = scene6;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group16.append("g");
 
@@ -319,7 +320,7 @@ export default function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -383,7 +384,7 @@ export default function opening(container){
 		var value = 0.295;
 		var color = "low";
 		var nextScene = null;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group16.append("g");
 
@@ -395,7 +396,7 @@ export default function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")

@@ -5,6 +5,8 @@ import bubble_graphic from './bubble_graphic.js';
 import opening from './opening.js';
 import add_link_icon from './add_link_icon.js';
 
+import forwhom from './forwhom.js';
+
 import metro_map from './metro_water_map.js';
 
 //main function
@@ -34,6 +36,8 @@ function main(){
     bubble_graphic();
 
     metro_map(document.getElementById("metro-map"));
+
+    var fh = forwhom().grid(document.getElementById("forwhom"), true);
   }
 
 

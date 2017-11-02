@@ -13,7 +13,7 @@ export default function add_link_icon(container){
 	var images = spans.selectAll("img").data([url]);
 		images.exit().remove();
 		images.enter().append("img").style("display","inline-block")
-									.style("width","2em")
+									.style("width","auto")
 									.style("height","2em")
 									.style("vertical-align","middle")
 									.attr("src", url)

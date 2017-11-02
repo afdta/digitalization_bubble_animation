@@ -256,12 +256,21 @@ function waypoint(element){
 }
 
 function bubble_graphic(){
-	var outer_wrap = d3.select("#bubble-growth").style("width","100%");
+	var outer_wrap = d3.select("#bubble-growth").style("width","100%").style("margin","4rem 0rem 2rem 0rem")
+		.style("border","1px solid #aaaaaa").style("border-width","0px 0px");
 
-	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center",true).style("margin-bottom","1rem").append("p").text(" ")
-										.style("min-height","4em");
+	var text_container = outer_wrap.append("div").style("position","relative").style("margin-bottom","1rem").classed("col-center big-col",true);
+	var invisible_text = text_container.append("div").classed("big-text-scroll",true).append("p").style("visibility","hidden").classed("no-select",true);
+	var textpan = text_container.append("div").classed("big-text-scroll",true).style("position","absolute").style("bottom","0px").append("p");
 
-	var wrap = outer_wrap.append("div").style("height","90vh");
+	textpan.append("span").text("Digitalization scores rose in 517 of 545 analyzed occupations from 2002 to 2016.");
+
+	var title = outer_wrap.append("div").classed("col-center big-col",true).append("p").text("Change in digital scores of 545 occupations, 2002 to 2016");
+
+	var wrap = outer_wrap.append("div").style("height","70vh");
+
+	
+
 	var compat = degradation(wrap.node());
 
 	var rowFmt = function(row){
@@ -291,17 +300,22 @@ function bubble_graphic(){
 	};
 
 	var colors = {low:"#0d73d6", medium:"#66c2a5", high:"#ffd92f"};
-	var filler = function(d){
-		var v = d.score;
+	var colors = {low:"#a4c7f2", medium:"#4472c4", high:"#053769"};
+
+	var grouper = function(score, color){
+		var v = score;
+
 		if(v < 33){
-			return colors.low;
+			var cat = "low";
 		}
 		else if(v < 66){
-			return colors.medium;
+			var cat = "medium";
 		}
 		else{
-			return colors.high;
+			var cat = "high";
 		}
+
+		return arguments.length > 1 && !!color ? colors[cat] : cat; 
 	};
 
 	if(compat.browser()){
@@ -313,204 +327,284 @@ function bubble_graphic(){
 			else{
 
 				//set up
-				data.sort(function(a,b){return a.score16 - b.score02});
+				data.sort(function(a,b){return a.score16 - b.score16});
 				
 				var range = d3.extent(data, function(d){return d.score16-d.score02});
 				var x = d3.scaleLinear().domain(range).range([10,90]);
-				var y = d3.scaleLinear().domain(d3.extent(data, function(d){return d.score16})).range([90, 10]);
+				var y = d3.scaleLinear().domain(d3.extent(data, function(d){return d.score16})).range([98, 5]);
 				var r = d3.scaleSqrt().domain(d3.extent(data, function(d){return d.emp16})).range([0,15]);
 				var x0 = x(0)+"%";
 
 				var svg = wrap.append("svg").attr("width","100%").attr("height","100%");
 
-				var textr = svg.append("text").attr("x",x0).attr("dx",10).attr("y","50").attr("text-anchor","start").text("Increase since 2002 →").style("font-size","13px");
-				var textl = svg.append("text").attr("x",x0).attr("dx",-10).attr("y","50").attr("text-anchor","end").text("← Decrease since 2002").style("font-size","13px");
-				var text = svg.append("text").attr("x",x0).attr("y","15").attr("text-anchor","middle").text("Change in digital scores of 545 occupations, 2002 to 2016");
+				//var textr = svg.append("text").attr("x",x0).attr("dx",15).attr("y","20").attr("text-anchor","start").text("Increase since 2002 →").style("font-size","13px");
+				//var textl = svg.append("text").attr("x",x0).attr("dx",-15).attr("y","20").attr("text-anchor","end").text("← Decrease since 2002").style("font-size","13px");
 
-				var yaxis = svg.append("line").attr("x1",x0).attr("x2",x0).attr("y1","25").attr("y2","95%").attr("stroke","#aaaaaa").style("shape-rendering","crispEdges");
+				var yaxis = svg.append("line").attr("x1",x0).attr("x2",x0).attr("y1","0%").attr("y2","100%").attr("stroke","#aaaaaa").style("shape-rendering","crispEdges");
 
-				var paths_u = svg.selectAll("line.change").data(data);
+				//transform data to include transormed coords for circles
+				var dot_data = data.map(function(d,i){
+					return {i:i, x:x(d.score16-d.score02)+"%", y:y(d.score16)+"%", r:r(d.emp16), score:d.score16, col: grouper(d.score16, true)};
+				});
+
+				//paths
+				var paths_u = svg.selectAll("line.change").data(dot_data);
 				paths_u.exit().remove();
 				var paths = paths_u.enter().append("line").classed("change", true).merge(paths_u)
 								   .attr("x1",x0).attr("x2",x0)
-								   .attr("y1",function(d){return y(d.score16)+"%"})
-								   .attr("y2",function(d){return y(d.score16)+"%"});
+								   .attr("y1",function(d){return d.y})
+								   .attr("y2",function(d){return d.y});
 
-					paths.attr("stroke", function(d){return filler({score:d.score16})})
-						 .attr("stroke-width", function(d){return r(d.emp16)*1.5})
-						 .style("opacity","0.25")
+					paths.attr("stroke", function(d){return d.col})
+						 .attr("stroke-width", function(d){return d.r*1.5})
+						 .style("opacity","0.15")
 						 ;
+
+
+				//dots
+				var dots_u = svg.selectAll("circle.occ").data(dot_data);
+					dots_u.exit().remove();
+				var dots = dots_u.enter().append("circle").classed("occ",true)
+								.merge(dots_u)
+								.attr("cx", function(d){return x0})
+								.attr("cy", function(d){return d.y})
+								.attr("r", function(d, i){return d.r})
+								.attr("fill", function(d, i){return d.col})
+								.attr("stroke-width","0.5px")
+								.attr("stroke", function(d){
+									//return d3.color(d.col).darker(0.25);
+									return "#ffffff";
+								});
+
 
 				var occ_gu = svg.selectAll("g").data(data);
 					occ_gu.exit().remove();
 				var occ_ge = occ_gu.enter().append("g");
 				var occ_g = occ_ge.merge(occ_gu);
 
-				var dots_u = occ_g.selectAll("circle").data(function(d, i){
-					var d1 = {i:i, x:x(d.score16-d.score02)+"%", y:y(d.score16)+"%", r:r(d.emp16), score:d.score16};
-					var d0 = {i:i, x:x0, y:y(d.score16)+"%", r:r(d.emp16), score:d.score02};
-					return [d1];
-				});
-					dots_u.exit().remove();
+
 				
-				var dots = dots_u.enter().append("circle").merge(dots_u)
-								.attr("cx", function(d){return x0})
-								.attr("cy", function(d){return d.y})
-								.attr("r", function(d, i){return d.r})
-								.attr("fill", function(d, i){return d3.color(filler(d)).darker(0.5);})
-								.attr("stroke", function(d){
-									return "#ffffff";
-								});
 
-				function intro(){
-					var text = "Digitalization scores rose in 517 of 545 analyzed occupations from 2002 to 2016.";
-					var text_array = text.split("");
+				var num_dots = data.length;
 
-					var nextScene = scene1;
+				//data is bound to dots in setup
 
-					textpan.selectAll("span").remove();		
-					var spans = textpan.selectAll("span").data(text_array);
-					spans.enter().append("span").style("opacity","0")
-								.text(function(d){
-									return d=="|" ? " " : d;
-								})
-								.transition()
-								.delay(function(d,i){
-									return (i*25);
-								})
-								.duration(100)
-								.style("opacity","1")
-								.on("end", function(d,i){
-									if(i==(text_array.length-1) && typeof nextScene==="function"){
-										setTimeout(scene1, 1500);
-									}
-								});
-					
-					
-					//var line = svg.append("line").attr("x1",x0).attr("x2",x0).attr("y1",y).attr("y2",y).attr("stroke","#666666").style("shape-rendering","crispEdges");
-					//var dot = svg.append("circle").attr("cx",x0).attr("cy",y).attr("r","5").attr("fill","#ffffff").attr("stroke","#666666");
-					//var text = svg.append("text").attr("x",x0).attr("y","15").attr("text-anchor","middle").text("2002 score = 0");	
+				//duration is dot animation duration... text takes as long as it takes to show... you can add a pause after text
 
-					//← Change in digital score, 2002 to 2016 →"
-					
-				}
+				var sceneDat = [
+					{
+						text:"Animate first group and describe change in digitalization of high digital skill occupations",
+						//accessor: function(d){
+						//	return grouper(d.score) === "high" ? d.x : 0;
+						//},
+						duration:700,
+						pause:1500,
+						concurrent:false,
+						filter:function(d){
+							return grouper(d.score) === "high";
+						}
+					},
+					{
+						text:"Animate second group. What's going on here... Note that bubble size is employment in 2016.",
+						//accessor: function(d){
+						//	return grouper(d.score) in {"high":1, "medium":1} ? d.x : 0;
+						//},
+						duration:700,
+						pause:1500,
+						concurrent:false,
+						filter:function(d){
+							return grouper(d.score)=== "medium";
+						}
+					},
+					{
+						text:"Animate third group. What's going on here... Explain some summary stats for group.",
+						//accessor: function(d){
+						//	return d.x;
+						//},
+						duration:700,
+						pause:1500,
+						concurrent:false,
+						filter:function(d){
+							return grouper(d.score)==="low";
+						}
+					}
+				];
 
-				//run animation
-				function scene1(){
+				function scenes(sceneData, setupFn){
+					var s = -1;
 
-					var text = "Animate first group and describe change in digitalization of high digital skill occupations";
-					var text_array = text.split("");
+					//fill placeholder with longest text to fix enough space and prevent vertical shifting of graphic during presentation
+					var longest_text = sceneData.map(function(d){
+						return d.text;
+					}).sort(function(a,b){
+						return b.length-a.length
+					})[0];
 
-					var nextScene = scene2;
+					invisible_text.text(longest_text);
 
-					var textDone = false;
+					//get and display data for the next "scene"/slide
+					function show(){
+						console.log("show");
 
-					textpan.selectAll("span").remove();		
-					var spans = textpan.selectAll("span").data(text_array);
-					spans.enter().append("span").style("opacity","0")
-								.text(function(d){
-									return d=="|" ? " " : d;
-								})
-								.transition()
-								.delay(function(d,i){
-									return (i*25);
-								})
-								.duration(100)
-								.style("opacity","1")
-								.on("end", function(d, i){
-									if(i==(text_array.length-1)){
-										textDone = true;
-									}
-								})
-								;
+						var data = ++s < sceneData.length ? sceneData[s] : null;
 
-					dots.transition()
-						.delay(function(d,i){return 10*(data.length - d.i)})
-						.duration(2000)
-						.attr("cx", function(d){return d.x})
-						.on("end", function(d,i){
-							if(d.i > 100 && typeof nextScene==="function" && textDone){
-								textDone = false;
-								setTimeout(nextScene, 1500);
+						if(data!==null){
+
+							var text_array = data.text.split("");
+							
+							//for this slide, have dots/text finished animating?
+							var text_finished = false;
+							var dots_finished = false;
+
+							var pause = !!data.pause ? data.pause : 0; //how long to wait before next view
+							var duration = !!data.duration ? data.duration : 1500; //how long to animate dots
+							var concurrent = !!data.concurrent ? data.concurrent : false; //animate dots at same time as text -- not working now
+
+							//accessor for x-position
+							/*if(typeof data.accessor === "function"){
+								var accessor = data.accessor;
 							}
-						})
-						;
+							else if(data.hasOwnProperty("accessor")){
+								var accessor = function(d){return data.accessor};
+							}
+							else{
+								var accessor = function(d){
+									return d.x;
+								}
+							}*/
 
-					paths.transition()
-						.delay(function(d,i){return 10*(data.length - i)})
-						.duration(2000)
-						.attr("x2", function(d,i){
-							return x(d.score16-d.score02)+"%";
-						});
+							//run next slide
+							var next = function(){
+								console.log(text_finished);
+								console.log(dots_finished);
+								if(text_finished && dots_finished && s < sceneData.length-1){
+									//show the next slide after pause duration
+									setTimeout(show, pause);
+								}
+							};
+
+							textpan.selectAll("span").remove();	
+
+							var spans_u = textpan.selectAll("span").data(text_array);
+							spans_u.exit().remove();
+							var spans = spans_u.enter().append("span").merge(spans_u).style("opacity","0").text(function(txt){return txt});
+
+							spans.transition()
+							.delay(function(d,i){
+								return i*16;
+							}).duration(100)
+							.style("opacity","1")
+							.on("end", function(d,i){
+								if(i==(text_array.length-1)){
+									text_finished = true;
+									next();
+									animate_dots();
+								}
+							})
+							;
+
+							/*var t = -1;
+							var tim;
+							function timback(elapsed){
+								if(++t < text_array.length){
+									//var letter = text_array[t];
+									//textpan.append("span").text(letter).style("opacity","0").transition().duration(100).style("opacity","1");
+									spans.filter(function(d,i){})
+									tim.restart(timback, 10);
+								}
+								else{
+									tim.stop();
+								}
+							}
+							tim = d3.timer(timback, 20);*/
+
+							/*var spans = textpan.selectAll("span").data(text_array);
+							spans.enter().append("span").style("opacity","0")
+										.text(function(d){
+											return d=="|" ? " " : d;
+										})
+										.transition()
+										.delay(function(d,i){
+											return (i*15);
+										})
+										.duration(15)
+										.style("opacity","1")
+										.on("end", function(d,i){
+											if(i==(text_array.length-1)){
+												text_finished = true;
+												animate_dots();
+												next();
+											}
+										})*/
+
+							function animate_dots(){
+
+								var animate = true;
+								
+								if(typeof data.filter==="function"){
+									var sub = dots.filter(data.filter);
+									var psub = paths.filter(data.filter);
+								}
+								else if(!!data.filter){
+									var sub = dots;
+									var psub = paths;
+								}
+								else{
+									//passing a falsy data value for filter will prevent any animation from occurring
+									var animate = false;
+								}
+
+								if(animate){
+									var sub_length = sub.size();
+									var psub_length = psub.size();
+
+									var count = 0;
+
+									sub.transition()
+										.delay(function(d,i){return (sub_length - i)})
+										.duration(duration)
+										.attr("cx", function(d){return d.x})
+										.on("end", function(d,i){
+											if(sub_length === (++count) ){
+												dots_finished = true;
+												next();
+											}
+										})
+										;
+
+									psub.transition()
+										.delay(function(d,i){return (psub_length - i)})
+										.duration(duration)
+										.attr("x2", function(d,i){
+											return d.x;
+										});
+								}
+								else{
+									dots_finished = true;
+									next();
+								}
+							}
+
+						} //case: data not null
+					}
+
+					return show;
 				}
 
-				//run animation
-				function scene2(){
-
-					var text = "Animate second group. What's going on here... Note that bubble size is employment in 2016.";
-					var text_array = text.split("");
-
-					var nextScene = scene3;
-
-					textpan.selectAll("span").remove();		
-					var spans = textpan.selectAll("span").data(text_array);
-					spans.enter().append("span").style("opacity","0")
-								.text(function(d){
-									return d=="|" ? " " : d;
-								})
-								.transition()
-								.delay(function(d,i){
-									return (i*25);
-								})
-								.duration(100)
-								.style("opacity","1")
-								.on("end", function(d,i){
-									if(i==(text_array.length-1) && typeof nextScene==="function"){
-										setTimeout(nextScene, 1500);
-									}
-								});
-				}
-
-				//run animation
-				function scene3(){
-
-					var text = "After it's over, allow user to interact with plot to get more detail.";
-					var text_array = text.split("");
-
-					var nextScene = null;
-
-					textpan.selectAll("span").remove();		
-					var spans = textpan.selectAll("span").data(text_array);
-					spans.enter().append("span").style("opacity","0")
-								.text(function(d){
-									return d=="|" ? " " : d;
-								})
-								.transition()
-								.delay(function(d,i){
-									return (i*25);
-								})
-								.duration(100)
-								.style("opacity","1")
-								.on("end", function(d,i){
-									if(i==(text_array.length-1) && typeof nextScene==="function"){
-										setTimeout(nextScene, 1500);
-									}
-								});
-				}
-
+				var slideshow = scenes(sceneDat);
 
 				waypoint(wrap.node()).activate(function(){
-					intro();
+					slideshow();
 				}).buffer(-0.05, 0.65);	
+
+				
 
 			}
 
-		});
+		}); //end d3.csv callback
 
 
 	}
-
-	
 }
 
 //v1.0 developed for congressional district poverty
@@ -553,14 +647,15 @@ function dimensions(el, maxwidth, maxheight){
 function opening(container){
 	
 	var outer_wrap = d3.select(container).style("width","100%").style("max-width","1200px").style("margin","3rem auto")
-		.style("border","1px solid #aaaaaa").style("border-width","1px 0px");
+		.style("border","3px solid #aaaaaa").style("border-width","1px 0px");
 
-	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center",true).append("p").text(" ")
+	var textpan = outer_wrap.append("div").classed("big-text-scroll col-center big-col",true).append("p").text(" ")
 			.style("min-height","4em");
 
 	var wrap = outer_wrap.append("div").style("width","100%").style("height","50vh");
 
 	var colors = {low:"#0d73d6", medium:"#66c2a5", high:"#ffd92f"};
+	var colors = {low:"#a4c7f2", medium:"#4472c4", high:"#053769"};
 
 	var svg = wrap.append("svg").attr("width","100%").attr("height","100%");
 
@@ -570,7 +665,7 @@ function opening(container){
 
 	var pause_duration = 1000; //use | to add pause
 	var circle_radius = 10;
-	var pulse_duration = 2500;
+	var pulse_duration = 1500;
 
 	var rscale = d3.scaleSqrt().domain([0,0.6]).range([0,circle_radius*9]);
 	var yscale = d3.scaleLinear().domain([0,0.6]).range([90,10]);
@@ -593,7 +688,7 @@ function opening(container){
 					c.transition()
 					.delay(function(d,i){return i*pulse_duration})
 					.duration(pulse_duration)
-					.attr("r", circle_radius*4).style("opacity","0")
+					.attr("r", circle_radius*3).style("opacity","0")
 					.on("end", function(d,i){
 						d3.select(this).attr("r", circle_radius-1).style("opacity","1");
 
@@ -617,12 +712,12 @@ function opening(container){
 
 	function scene1(nextSceneDelay){
 		stop_teaser();
-		var text = "Of the occupations we track,|56% required low digital skills in 2002. [To do: add annotation to graphic]";
+		var text = "56 percent of the jobs studied required low digital skills in 2002.";
 		var text_array = text.split("");
 		var value = 0.557;
 		var color = "low";
 		var nextScene = scene2;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.low_group = group02.append("g");
 
@@ -656,7 +751,7 @@ function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -668,12 +763,12 @@ function opening(container){
 	}
 
 	function scene2(nextSceneDelay){
-		var text = "Meanwhile, nearly 40 percent required medium digital skills. [To do: Tweak timing of transitions.]";
+		var text = "Meanwhile, nearly 40 percent required medium digital skills.";
 		var text_array = text.split("");
 		var value = 0.395;
 		var color = "medium";
 		var nextScene = scene3;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group02.append("g");
 
@@ -707,7 +802,7 @@ function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -725,7 +820,7 @@ function opening(container){
 		var value = 0.048;
 		var color = "high";
 		var nextScene = scene4;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group02.append("g");
 
@@ -759,7 +854,7 @@ function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -772,12 +867,12 @@ function opening(container){
 	}
 
 	function scene4(nextSceneDelay){
-		var text = "But by 2016, the share of jobs requiring high digital skills had jumped to 23%.";
+		var text = "But by 2016, the share of jobs requiring high digital skills had jumped to 23 percent.";
 		var text_array = text.split("");
 		var value = 0.230;
 		var color = "high";
 		var nextScene = scene5;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group16.append("g");
 
@@ -789,7 +884,7 @@ function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -854,7 +949,7 @@ function opening(container){
 		var value = 0.475;
 		var color = "medium";
 		var nextScene = scene6;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group16.append("g");
 
@@ -866,7 +961,7 @@ function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -930,7 +1025,7 @@ function opening(container){
 		var value = 0.295;
 		var color = "low";
 		var nextScene = null;
-		var sceneDelay = arguments.length ? nextSceneDelay : 3000;
+		var sceneDelay = arguments.length ? nextSceneDelay : 1500;
 
 		dom.mid_group = group16.append("g");
 
@@ -942,7 +1037,7 @@ function opening(container){
 					})
 					.transition()
 					.delay(function(d,i){
-						return (i*25);
+						return (i*16);
 					})
 					.duration(100)
 					.style("opacity","1")
@@ -1019,11 +1114,297 @@ function add_link_icon(container){
 	var images = spans.selectAll("img").data([url]);
 		images.exit().remove();
 		images.enter().append("img").style("display","inline-block")
-									.style("width","2em")
+									.style("width","auto")
 									.style("height","2em")
 									.style("vertical-align","middle")
 									.attr("src", url)
 									.attr("alt","pointer icon");
+}
+
+//import add_hand_icons from './add_hand_icons.js';
+
+function forwhom(){
+	var I = {};
+
+	//lists of policy ids
+	var local = ["automation", "jobgr", "wages", "wagegr", "gender", "race"];
+	
+	//policy text -- paragraphs separated by {p}
+	var policy = {};
+
+	//footnotes in same order as s in the text
+	var footnotes = {};
+
+	////split by footnotes first, then by paragraphs so, do {p} not the reverse
+
+	//local
+	policy.automation = 'Nearly 60 percent of tasks performed in low-digital occupations appear susceptible to automation, compared to only around 30 percent of tasks in highly digital occupations.{p}Read more about the correlation between digitalization and automation – pointer icon »';
+	footnotes.automation = [];
+
+	policy.jobgr = 'Job growth has been rapid in high-digital level occupations, such as computer-mathematical and business-finance occupational groups, as well as in low-digital level occupations, such as personal care and food preparation. By contrast, middle-digital occupations, such as office-administrative and education occupations have seen much slower job growth. Read more about the correlation between digitalization and job growth – pointer icon »';
+	footnotes.jobgr = [];
+
+	policy.wages = 'The mean annual wage for workers in high-level digital occupations reached $72,896 in 2016, whereas workers in middle-level digital jobs earned $48,274 on average, and workers in low-level digital occupations earned $30,393 on average. Read more about the correlation between digitalization and wages – pointer icon »';
+	footnotes.wages = [];
+
+	//federal
+	policy.wagegr = 'Between 2010 and 2016, occupations with high-level digital scores on average registered more than 0.8 percent wage growth annually, compared to middle-level annual wage growth of 0.3 percent, versus annual wage declines of 0.2 percent for low-level occupations. Read more about the correlation between digitalization and wage growth – pointer icon »';
+	footnotes.wagegr = [];
+
+	policy.gender = 'Women (48), with slightly higher aggregate digital scores than men (45), represent about three-quarters of the workforce in many of the largest medium-digital occupational groups, such as health care, office administration, and education. Conversely, men continue to dominate the highest-level digital occupations, such as computer, engineering and management fields, as well as lower-digital occupations such as transportation, construction, natural resources, and building and grounds occupations. Read more about the correlation between digitalization and gender – pointer icon »';
+	footnotes.gender = [];
+
+	policy.race = 'Whites (65 percent of the workforce) remain overrepresented in high-level digital occupational groups, such as engineering and management, as well as medium-level digital areas such as business and finance, the arts, and legal and education professions. Asians (6 percent of the workforce) account for 21.3 percent of highly digital computer and math occupations, and 11.6 percent of engineering occupations. Blacks (12 percent of the workforce) are overrepresented in medium-digital occupations such as office and administrative support, community and social service, as well as low-digital level jobs such as transportation, personal care, and building and grounds maintenance. Hispanics (17 percent of the workforce) are significantly underrepresented in high-level digital technical, business and finance occupational groups, and somewhat underrepresented in medium-level legal, sales, and education positions. Read more about the correlation between digitalization and race/ethnicity – pointer icon »';
+	footnotes.race = [];
+
+	//parse
+	var policy2 = {};
+	for(var p in policy){
+		if(policy.hasOwnProperty(p)){
+			var split0 = policy[p].split("{f}");
+
+			var footnoted = "";
+			split0.forEach(function(d,i){
+				//don't footnote the last substring. if last character is footnote, then the last element in the array will be blank string, ""
+				var super_note = (i < (split0.length-1)) ? '<sup style="vertical-align:super;">' + (i+1) + '</sup>' : '';
+				footnoted = footnoted + d + super_note;
+			}); 
+			policy2[p] = footnoted.split("{p}");
+		}
+	}
+
+	var body_wrap = d3.select("#metro-interactive");
+	var show = function(id){
+		d3.event.stopPropagation();
+		var fixed = body_wrap.append("div")
+			.style("position","fixed")
+			.style("width","100%")
+			.style("height","100%")
+			.style("z-index","1000")
+			.style("background-color","rgba(0, 0, 0, 0)")
+			.style("top","0px")
+			.style("left","0px")
+			.classed("makesans",true);
+
+		var table = fixed.append("div")
+			.style("display","table")
+			.style("max-width","1000px")
+			.style("width","90%")
+			.style("height","100%")
+			.style("margin","1em auto")
+			.style("opacity","0");
+		var row = table.append("div")
+			.style("display","table-row");
+		var cell = row.append("div")
+			.style("display","table-cell")
+			.style("vertical-align","middle");
+
+		var box_wrap = cell.append("div")
+			.style("border","0px solid #ffffff")
+			.style("padding","0px")
+			.style("position","relative")
+			.style("display","block");
+
+		var ribbon_cols = ["#0d73d6"];
+		var svg_ribbon = box_wrap.append("div")
+								 .style("height","10px")
+								 .append("svg").attr("width","100%")
+								 .attr("height","100%")
+								 .style("x","0px")
+								 .style("y","0px")
+								.style("display","block")
+								.selectAll("rect").data(ribbon_cols).enter()
+								.append("rect").attr("width",(100/(ribbon_cols.length))+"%")
+								.attr("height","100%").attr("x", function(d,i){return (i*(100/7))+"%"})
+								.attr("fill", function(d,i){
+									return ribbon_cols[i];
+								});
+
+
+		var x_height = 30;
+		var x_width = x_height;
+
+		var xsvg = box_wrap.append("div")
+		   .style("cursor","pointer")
+		   .classed("make-sans",true)
+		   .style("position","absolute")
+		   .style("top",(x_width)+"px")
+		   .style("right",x_width+"px")
+		   .style("width",x_width+"px")
+		   .style("height",x_height+"px")
+		   .style("z-index","10")
+		   .append("svg")
+		   .attr("width","100%").attr("height","100%");
+
+			xsvg.append("line").attr("x1","20%").attr("x2","80%").attr("y1","20%").attr("y2","80%");
+			xsvg.append("line").attr("x1","20%").attr("x2","80%").attr("y1","80%").attr("y2","20%");
+
+			xsvg.selectAll("line").attr("stroke","#0d73d6")
+									.attr("stroke-width","5px");
+		   
+
+		var box = box_wrap.append("div").classed("reading",true)
+			.style("background-color","rgba(250, 250, 250, 1)")
+			.style("position","relative")
+			.style("padding","1rem")
+			.style("line-height","1.4em")
+			.style("overflow","auto")
+			.style("max-height","85vh")
+			.style("max-width","1000px")
+			.style("z-index","5");
+
+
+			box.selectAll("p").data(policy2[id]).enter().append("p").classed("brook",true)
+						.html(function(d){return d})
+						.style("padding",function(d,i){
+							return i==0 ? "0.5rem " + (x_width+20)+"px" + " 0rem 1rem" : "0rem 1rem 0rem 1rem";
+						})
+						.style("margin","1rem 0em 1.75rem 0em")
+						.style("font-weight",function(d,i){return i==0 ? "bold" : "normal"})
+						.style("font-size",function(d,i){return i==0 ? "1.15em" : null})
+						;
+
+		if(footnotes[id].length > 0){
+			box.append("div").style("height","0.5em").style("width","30%")
+				  .style("border-top","1px solid #aaaaaa")
+				  .style("margin","0px 0px 0px 0.75rem");
+			var footnote_wrap = box.append("div").style("margin","1rem");
+			var footnote_text = footnote_wrap.selectAll("p").data(function(d){return footnotes[id] }).enter().append("p")
+											.html(function(d,i){
+												var super_note = '<sup style="vertical-align:super;">' + (i+1) + '</sup> ';
+												return super_note + d;
+											});
+		}
+
+		//show
+		fixed.transition()
+			.style("background-color","rgba(0, 0, 0, 0.75)")
+			;
+		table.transition().style("opacity","1");		
+
+		box.on("mousedown", function(d,i){
+			d3.event.stopPropagation();
+		});
+
+		fixed.on("mousedown", function(d,i){
+			fixed.remove();
+		});
+		//
+	};//end show
+
+
+	//use 1: layout all the interventions in a large grid with text
+	I.grid = function(container, local_policy){
+		var wrap = d3.select(container).style("max-width","1600px").style("margin","0px auto");
+
+		var data = arguments.length > 1 && !!local_policy ? 
+					local.map(function(d){return {id:d, text:policy2[d]}}) : 
+					federal.map(function(d){return {id:d, text:policy2[d]}}); 
+
+		var row = wrap.selectAll("div").data([data])
+							.enter().append("div")
+							.classed("c-fix",true)
+							.style("margin","0em 0em");
+
+		var tiles = row.selectAll("div.subway-tile").data(function(d){return d})
+							.enter().append("div").classed("subway-tile",true);
+
+		var headers = tiles.append("div").classed("tile-header",true);
+		var dots = headers.append("div").classed("dot",true);
+		//var dot_labels = dots.append("p").text(function(d){return d});
+
+
+		var content = tiles.append("div").classed("tile-content reading",true);
+		var text = content.selectAll("p").data(function(d){return d.text}).enter().append("p")
+							.html(function(d){return d})
+							.style("font-weight",function(d,i){return i==0 ? "bold" : "normal"})
+							.style("font-size",function(d,i){return i==0 ? "1em" : null});
+		
+
+		content.each(function(d,i){
+			var thiz = d3.select(this);
+			if(footnotes[d.id].length > 0){
+				thiz.append("div").style("height","0.5em").style("width","30%")
+								  .style("border-top","1px solid #aaaaaa")
+								  ;
+
+				var footnote_wrap = thiz.append("div");
+				var footnote_text = footnote_wrap.selectAll("p").data(function(d){return footnotes[d.id] }).enter().append("p")
+												.html(function(d,i){
+													var super_note = "<sup>" + (i+1) + "</sup> ";
+													return super_note + d;
+												});
+			}
+		});
+
+		//more info available...
+
+		tiles.append("div").classed("more-info-available",true);
+
+		var expandable = {};
+		var sizeCheck = function(){
+
+			content.each(function(d,i){
+				var bottom0 = this.parentNode.getBoundingClientRect().bottom;
+				var bottom1 = this.getBoundingClientRect().bottom;
+				expandable[(i+"")] = bottom1 > bottom0;
+			});
+
+			tiles.classed("click-for-more-info", function(d,i){
+					if(expandable[(i+"")]){
+						return true;
+					}
+					else{
+						return false;
+					}				
+				});
+			
+			var uup = tiles.selectAll("div.zoomdiv").data(function(d,i){
+				return expandable[(i+"")] ? [1] : [];
+			});
+			uup.exit().remove();
+			var uen = uup.enter().append("div").classed("zoomdiv",true);
+				uen.append("svg");
+				uen.style("position","absolute")
+					  .style("bottom","0em")
+					  .style("right","10%")
+					  .style("width","50px")
+					  .style("height","50px")
+					  .style("padding","0px")
+					  .style("border","0px solid #0d73d6")
+					  .style("background-color","rgba(255,255,255,0.8)")
+					  .style("border-radius","25px")
+					  ;
+
+				var zoom_svg = uen.select("svg").attr("width","35px")
+									    .attr("height","35px")
+										.attr("viewBox","0 0 50 50");
+
+				var zoom_in_g = zoom_svg.append("g").attr("transform","translate(0,-1030)")
+												.attr("stroke-linecap","round");	
+
+				zoom_in_g.append("path").attr("d","m42.5 1055a17.5 17.5 0 0 1 -17.5 17.5 17.5 17.5 0 0 1 -17.5 -17.5 17.5 17.5 0 0 1 17.5 -17.5 17.5 17.5 0 0 1 17.5 17.5z").attr("fill","#999999").attr("stroke","#555555");
+				zoom_in_g.append("path").attr("d","m19 1054.5 6.1902 6 5.8098-6")
+										.attr("stroke","#ffffff").attr("stroke-linecap","square").attr("fill","none").attr("stroke-width","5")
+										.attr("stroke-linejoin","round");
+
+
+		};
+
+		tiles.on("mousedown", function(d,i){
+			if(expandable[(i+"")]){
+				show(d.id);
+			}
+		});
+
+		sizeCheck();
+
+		window.addEventListener("resize", sizeCheck);
+
+
+	};
+
+	return I;
 }
 
 //tests: handle undefined values
@@ -4206,6 +4587,8 @@ function main(){
     bubble_graphic();
 
     metro_map(document.getElementById("metro-map"));
+
+    var fh = forwhom().grid(document.getElementById("forwhom"), true);
   }
 
 
