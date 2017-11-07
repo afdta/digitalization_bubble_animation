@@ -1,5 +1,7 @@
 //import add_hand_icons from './add_hand_icons.js';
 
+import scope from "../../../js-modules/scope.js";
+
 export default function forwhom(){
 	var I = {};
 
@@ -177,7 +179,7 @@ export default function forwhom(){
 
 	//use 1: layout all the interventions in a large grid with text
 	I.grid = function(container, local_policy){
-		var wrap = d3.select(container).style("max-width","1600px").style("margin","0px auto");
+		var wrap = d3.select(container).style("margin","0px");
 
 		var data = arguments.length > 1 && !!local_policy ? 
 					local.map(function(d){return {id:d, text:policy2[d]}}) : 

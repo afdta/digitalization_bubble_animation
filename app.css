@@ -74,6 +74,11 @@
   min-width: 300px;  
 }
 
+#metro-interactive .col-left{
+  margin:1rem 4rem;
+  max-width:780px;
+}
+
 
 /*links*/
 #metro-interactive a{
@@ -110,13 +115,28 @@
 }
 
 /*text*/
-#metro-interactive p:not(.brook), #metro-interactive li, #metro-interactive text, #metro-interactive select{
-  font-size:16px;
-  /*font-family: franklin-gothic-urw, arial, helvetica, sans-serif;*/
-  font-family:Georgia, Times, serif;
+#metro-interactive p:not(.brook), #metro-interactive li, #metro-interactive select{
+  font-family:"PT Serif", Times, serif;
   margin:0em 0em 1em 0em;
   color: #111111;
   line-height:1.5em;
+}
+
+#metro-interactive text{
+  font-size:1rem;
+  font-family:"PT Serif", Times, serif;
+  fill: #111111;
+}
+
+#metro-interactive p.chart-title{
+  font-size:1.35em;
+  font-weight:bold;
+  margin:0rem 0rem 1rem 0rem;
+}
+
+#metro-interactive p.chart-subtitle{
+  font-size:1.15em;
+  margin:-1rem 0rem 1rem 0rem;
 }
 
 #metro-interactive .makesans p, #metro-interactive .makesans text{
@@ -474,13 +494,18 @@ div.subway-tile.click-for-more-info .more-info-available{
   	margin-left:auto;
   }
 
+  #metro-interactive .col-left{
+    margin:1rem 1rem;
+    max-width:780px;
+  }
+
 }
 
 @media (min-width:600px){
 
   div.subway-tile, div.five-wide > div.subway-tile{
     width:50%;
-    height:250px;
+    height:420px;
   }
 
   div.subway-tile:nth-child(odd) {
@@ -502,7 +527,13 @@ div.subway-tile.click-for-more-info .more-info-available{
   	float:none;
   	width:auto;
   	margin-left:auto;
-  }    
+  } 
+
+  #metro-interactive .col-left{
+    margin:1rem 5rem;
+    max-width:780px;
+  }
+
 }
 
 @media (min-width:950px){

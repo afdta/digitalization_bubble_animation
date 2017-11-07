@@ -1,27 +1,41 @@
 import degradation from "../../../js-modules/degradation.js";
 import dir from "../../../js-modules/rackspace.js";
 import waypoint from "../../../js-modules/on-scroll2.js";
+import format from "../../../js-modules/formats.js";
+
+import select_menu from "../../../js-modules/select-menu.js";
+
+import dimensions from "../../../js-modules/dimensions.js";
+import scope from "../../../js-modules/scope.js";
 
 export default function bubble_graphic(){
-	var outer_wrap = d3.select("#bubble-growth").style("width","100%").style("margin","4rem 0rem 2rem 0rem")
+
+	//dom setup
+	var outer_wrap = d3.select("#bubble-growth").style("width","100%").style("margin","4rem 0rem 2rem 0rem").style("padding","none")
 		.style("border","1px solid #aaaaaa").style("border-width","0px 0px");
 
-	var text_container = outer_wrap.append("div").style("position","relative").style("margin-bottom","1rem").classed("col-center big-col",true);
-	var invisible_text = text_container.append("div").classed("big-text-scroll",true).append("p").style("visibility","hidden").classed("no-select",true);
-	var textpan = text_container.append("div").classed("big-text-scroll",true).style("position","absolute").style("bottom","0px").append("p");
+	var plot_wrap = outer_wrap.append("div").style("margin","0px auto").classed("plot-wrap",true);
 
-	textpan.append("span").text("Digitalization scores rose in 517 of 545 analyzed occupations from 2002 to 2016.");
+	var xtitle = plot_wrap.append("p").text("CHANGE IN DIGITAL SCORE, 2002 TO 2016").style("margin","0em 2.5%").style("font-size","0.85rem").style("text-align","right");
 
-	var title = outer_wrap.append("div").classed("col-center big-col",true).append("p").text("Change in digital scores of 545 occupations, 2002 to 2016");
+	var wrap = plot_wrap.append("div").classed("makesans",false);
 
-	var wrap = outer_wrap.append("div").style("height","70vh");
-
+	//svg setup
+	var svg = wrap.append("svg").attr("width","100%").attr("height","100%");
+	var xaxg = svg.append("g");
 	
+	var yaxgl = svg.append("g");
+	var yaxgm = svg.append("g");
+	var yaxgh = svg.append("g");
+	
+	var maing = svg.append("g");
+	var anno = svg.append("g");
 
+	//degradation
 	var compat = degradation(wrap.node());
 
+	//data conversion
 	var rowFmt = function(row){
-		//console.log(Object.keys(row));
 		var d = {};
 		d.soc = row["occ.code"];
 		d.title = row["occ.title"];
@@ -46,24 +60,8 @@ export default function bubble_graphic(){
 		return d;
 	}
 
-	var colors = {low:"#0d73d6", medium:"#66c2a5", high:"#ffd92f"};
 	var colors = {low:"#a4c7f2", medium:"#4472c4", high:"#053769"};
 
-	var grouper = function(score, color){
-		var v = score;
-
-		if(v < 33){
-			var cat = "low";
-		}
-		else if(v < 66){
-			var cat = "medium";
-		}
-		else{
-			var cat = "high";
-		}
-
-		return arguments.length > 1 && !!color ? colors[cat] : cat; 
-	}
 
 	if(compat.browser()){
 		d3.csv(dir.url("data", "ForAlec.csv"), rowFmt, function(err, data){
@@ -72,288 +70,221 @@ export default function bubble_graphic(){
 				compat.alert(wrap.node());
 			}
 			else{
+				//parameters
+				var filter = null;
+				var filters = {
 
-				//set up
-				data.sort(function(a,b){return a.score16 - b.score16});
-				
+				};
+
+				//set up data and scales
+				data.sort(function(a,b){return b.emp16 - a.emp16});
+
 				var range = d3.extent(data, function(d){return d.score16-d.score02});
-				var x = d3.scaleLinear().domain(range).range([10,90]);
-				var y = d3.scaleLinear().domain(d3.extent(data, function(d){return d.score16})).range([98, 5]);
-				var r = d3.scaleSqrt().domain(d3.extent(data, function(d){return d.emp16})).range([0,15]);
-				var x0 = x(0)+"%";
+				var rangepad = (range[1]-range[0])*0.01;
 
-				var svg = wrap.append("svg").attr("width","100%").attr("height","100%");
+				var x = d3.scaleLinear().domain([range[0]-rangepad, range[1]+rangepad]);
+				var r = d3.scaleSqrt().domain(d3.extent(data, function(d){return d.emp16})).range([0,30]);
 
-				//var textr = svg.append("text").attr("x",x0).attr("dx",15).attr("y","20").attr("text-anchor","start").text("Increase since 2002 →").style("font-size","13px");
-				//var textl = svg.append("text").attr("x",x0).attr("dx",-15).attr("y","20").attr("text-anchor","end").text("← Decrease since 2002").style("font-size","13px");
+				var yl = d3.scaleLinear().domain([0,33]); 
+				var ym = d3.scaleLinear().domain([33,60]);
+				var yh = d3.scaleLinear().domain([60,100]);
+				var y = d3.scaleLinear().domain([0,100]);
 
-				var yaxis = svg.append("line").attr("x1",x0).attr("x2",x0).attr("y1","0%").attr("y2","100%").attr("stroke","#aaaaaa").style("shape-rendering","crispEdges");
+				var xticks = d3.range(-20,60,10);
+				var xaxis = d3.axisTop(x).tickFormat(format.ch0).tickSizeOuter(8).tickSizeInner(4).tickPadding(6).tickValues(xticks);
 
-				//transform data to include transormed coords for circles
-				var dot_data = data.map(function(d,i){
-					return {i:i, x:x(d.score16-d.score02)+"%", y:y(d.score16)+"%", r:r(d.emp16), score:d.score16, col: grouper(d.score16, true)};
-				});
-
-				//paths
-				var paths_u = svg.selectAll("line.change").data(dot_data);
-				paths_u.exit().remove();
-				var paths = paths_u.enter().append("line").classed("change", true).merge(paths_u)
-								   .attr("x1",x0).attr("x2",x0)
-								   .attr("y1",function(d){return d.y})
-								   .attr("y2",function(d){return d.y})
-								   ;
-
-					paths.attr("stroke", function(d){return d.col})
-						 .attr("stroke-width", function(d){return d.r*1.5})
-						 .style("opacity","0.15")
-						 ;
-
-
-				//dots
-				var dots_u = svg.selectAll("circle.occ").data(dot_data);
-					dots_u.exit().remove();
-				var dots = dots_u.enter().append("circle").classed("occ",true)
-								.merge(dots_u)
-								.attr("cx", function(d){return x0})
-								.attr("cy", function(d){return d.y})
-								.attr("r", function(d, i){return d.r})
-								.attr("fill", function(d, i){return d.col})
-								.attr("stroke-width","0.5px")
-								.attr("stroke", function(d){
-									//return d3.color(d.col).darker(0.25);
-									return "#ffffff";
-								})
-
-
-				var occ_gu = svg.selectAll("g").data(data);
-					occ_gu.exit().remove();
-				var occ_ge = occ_gu.enter().append("g")
-				var occ_g = occ_ge.merge(occ_gu);
-
-
+				var yfmt = function(v){
+					return v%10 == 0 || v == 60 || v == 33 ? format.num0(v) : "";
+				}
 				
+				var yaxisl = d3.axisLeft(yl).tickFormat(yfmt).tickValues(d3.range(0,35,5)).tickSizeOuter(8).tickSizeInner(4).tickPadding(6);
+				var yaxism = d3.axisLeft(ym).tickFormat(yfmt).tickValues(d3.range(35,60,5)).tickSizeOuter(8).tickSizeInner(4).tickPadding(6);
+				var yaxish = d3.axisLeft(yh).tickFormat(yfmt).tickValues(d3.range(60,105,5)).tickSizeOuter(8).tickSizeInner(4).tickPadding(6);
 
-				var num_dots = data.length;
+				//padding to allow for axes
+				var padding = scope("padding");
 
-				//data is bound to dots in setup
+				//space between plot" data and axes
+				var plotpad = scope("plotpad");
 
-				//duration is dot animation duration... text takes as long as it takes to show... you can add a pause after text
+				xaxg.attr("transform","translate(0,"+ padding[0] + ")");
+				yaxgl.attr("transform","translate("+ padding[3] + ",0)");
+				yaxgm.attr("transform","translate("+ padding[3] + ",0)");
+				yaxgh.attr("transform","translate("+ padding[3] + ",0)");
 
-				var sceneDat = [
-					{
-						text:"Animate first group and describe change in digitalization of high digital skill occupations",
-						//accessor: function(d){
-						//	return grouper(d.score) === "high" ? d.x : 0;
-						//},
-						duration:700,
-						pause:1500,
-						concurrent:false,
-						filter:function(d){
-							return grouper(d.score) === "high";
+				var ylabels = svg.selectAll("text").data([
+															{v:"high", l:"High", y:100}, 
+															{v:"medium", l:"Medium", y:60}, 
+															{v:"low", l:"Low", y:33}
+														]).enter().append("text")
+														  .attr("text-anchor","end")
+														  .style("fill", function(d){return colors[d.v]})
+														  .text(function(d){return d.l});
+
+				var ytitle = svg.append("text").text("DIGITAL SCORE, 2016").attr("text-anchor","end").style("font-size","0.85rem");
+
+				var vertg = svg.selectAll("g.vline").data(xticks.map(function(d){
+					return [{x:d, y1:100, y2:60, v:"high"}, {x:d, y1:60, y2:33, v:"medium"}, {x:d, y1:33, y2:0, v:"low"}];
+				})).enter().append("g").classed("vline",true)
+				var verts = vertg.selectAll("path")
+								.data(function(d){return d}).enter().append("path")
+								.attr("stroke", function(d){return colors[d.v]})
+								.style("shape-rendering","crispEdges")
+								.attr("stroke-dasharray",function(d){return d.x==0 ? null : "2,2"})
+								.attr("stroke-width",function(d){return d.x==0 ? "2" : "1"})
+								;
+
+				//text_box.style("margin", "0px 0px 0rem " + (padding[3]+plotpad)+"px").style("text-align","left");
+
+				//industry_text.style("margin", "0px 0px 0rem " + (padding[3]+plotpad)+"px").style("text-align","left").style("max-width","780px");
+				//xtitle.style("margin", "0px 0px 0px " + (padding[3]+plotpad)+"px").style("text-align","left");
+
+				var sel = null;
+
+				function draw(){
+
+					var dims = dimensions();
+
+					var width = dims.viewport.width * 0.95;
+					var height = dims.viewport.height * 0.75;
+
+					if(height < 400){height = 400}
+					if(width < 320){width = 320}
+					
+					x.range([padding[3]+plotpad, width-padding[1]]);
+
+					y.range([height-padding[2]-(3*plotpad), padding[0]+plotpad])
+					
+					yl.range([y(0)+(2*plotpad), y(33)+(2*plotpad)]);
+					ym.range([y(33)+plotpad, y(60)+plotpad]);
+					yh.range([y(60), y(100)]);
+
+					var x0 = x(0);
+					
+					xaxg.call(xaxis).selectAll("line, path").attr("stroke","#aaaaaa").style("shape-rendering","crispEdges");
+					xaxg.selectAll("text").style("fill","#333333")
+						.style("font-weight", function(d){return d==0 ? "bold" : null})
+						.style("display", function(d){
+							return width < 600 ? (d % 20 == 0 ? "inline" : "none") : "inline";
+						});
+					
+					yaxgl.call(yaxisl).selectAll("line, path").attr("stroke",colors.low).style("shape-rendering","crispEdges");
+					yaxgm.call(yaxism).selectAll("line, path").attr("stroke",colors.medium).style("shape-rendering","crispEdges");
+					yaxgh.call(yaxish).selectAll("line, path").attr("stroke",colors.high).style("shape-rendering","crispEdges");
+
+					yaxgl.selectAll("text").style("fill",colors.low);
+					yaxgm.selectAll("text").style("fill",colors.medium);
+					yaxgh.selectAll("text").style("fill",colors.high);
+
+					ylabels.attr("transform", function(d){
+						if(d.v=="high"){
+							var y= yh(d.y);
 						}
-					},
-					{
-						text:"Animate second group. What's going on here... Note that bubble size is employment in 2016.",
-						//accessor: function(d){
-						//	return grouper(d.score) in {"high":1, "medium":1} ? d.x : 0;
-						//},
-						duration:700,
-						pause:1500,
-						concurrent:false,
-						filter:function(d){
-							return grouper(d.score)=== "medium";
+						else if(d.v=="medium"){
+							var y= ym(d.y);
 						}
-					},
-					{
-						text:"Animate third group. What's going on here... Explain some summary stats for group.",
-						//accessor: function(d){
-						//	return d.x;
-						//},
-						duration:700,
-						pause:1500,
-						concurrent:false,
-						filter:function(d){
-							return grouper(d.score)==="low";
+						else{
+							var y= yl(d.y);
 						}
-					}
-				]
 
-				function scenes(sceneData, setupFn){
-					var s = -1;
+						return "translate("+(padding[3]+20)+","+y+") rotate(-90)";
+					});
 
-					//fill placeholder with longest text to fix enough space and prevent vertical shifting of graphic during presentation
-					var longest_text = sceneData.map(function(d){
-						return d.text;
-					}).sort(function(a,b){
-						return b.length-a.length
-					})[0];
+					ytitle.attr("transform", "translate(20,"+yh(100)+") rotate(-90)");
 
-					invisible_text.text(longest_text);
+					verts.attr("d", function(d){
+						var x1 = x(d.x);
 
-					//get and display data for the next "scene"/slide
-					function show(){
-						console.log("show");
+						if(d.v=="high"){
+							var y1= yh(d.y1);
+							var y2= yh(d.y2);
+						}
+						else if(d.v=="medium"){
+							var y1= ym(d.y1);
+							var y2= ym(d.y2);
+						}
+						else{
+							var y1= yl(d.y1);
+							var y2= yl(d.y2);
+						}
 
-						var data = ++s < sceneData.length ? sceneData[s] : null;
+						return "M"+x1+","+y1+" L"+x1+","+y2;
+					});
 
-						if(data!==null){
+					plot_wrap.style("width", width+"px");
+					wrap.style("height", height+"px");
+					
+					//dots
+					var dot_data = data.map(function(d,i){
+						if(d.score16 <= 33){
+							var y = yl(d.score16);
+							var col = colors.low;
+						}
+						else if(d.score16 >= 60){
+							var y = yh(d.score16);
+							var col = colors.high;
+						}
+						else{
+							var y = ym(d.score16);
+							var col = colors.medium;
+						}
 
-							var text_array = data.text.split("");
-							
-							//for this slide, have dots/text finished animating?
-							var text_finished = false;
-							var dots_finished = false;
+						return {
+								i:i, 
+								x:x(d.score16-d.score02), 
+								y:y, 
+								r:r(d.emp16), 
+								score:d.score16, 
+								col: col
+							};
+					});
 
-							var pause = !!data.pause ? data.pause : 0; //how long to wait before next view
-							var duration = !!data.duration ? data.duration : 1500; //how long to animate dots
-							var concurrent = !!data.concurrent ? data.concurrent : false; //animate dots at same time as text -- not working now
+					//dots
+					var dots_u = svg.selectAll("circle.occ").data(dot_data);
+						dots_u.exit().remove();
+					var dots = dots_u.enter().append("circle").classed("occ",true)
+									.merge(dots_u)
+									.attr("cy", function(d){return d.y})
+									.attr("r", function(d, i){return d.r})
+									.attr("fill", function(d, i){return d.col})
+									.attr("fill-opacity", "0.8")
+									.attr("stroke-width","0.5px")
+									.attr("stroke", function(d){
+										//return d3.color(d.col).darker(0.25);
+										return "#ffffff";
+									})
+									.attr("cx", function(d){return d.x});
 
-							//accessor for x-position
-							/*if(typeof data.accessor === "function"){
-								var accessor = data.accessor;
-							}
-							else if(data.hasOwnProperty("accessor")){
-								var accessor = function(d){return data.accessor};
+					if(sel === null){
+						sel = select_menu(document.getElementById("bubble-selection"));
+						sel.prompt("Select a filter");
+						sel.options([{value: "all", text: "Show all 545 occupations"}, 
+							{value: "largest", text: "Random selection..."},
+							{value: "change", text: "What are meaningful filters? Largest, biggest change?"}])
+
+						sel.callback(function(d){
+							console.log(d.value);
+							if(this=="all"){
+								dots.transition().style("opacity",1);
 							}
 							else{
-								var accessor = function(d){
-									return d.x;
-								}
-							}*/
-
-							//run next slide
-							var next = function(){
-								console.log(text_finished);
-								console.log(dots_finished);
-								if(text_finished && dots_finished && s < sceneData.length-1){
-									//show the next slide after pause duration
-									setTimeout(show, pause);
-								}
+								dots.transition().style("opacity",function(d,i){
+									return Math.random() < 0.1 ? "1" : "0.1";
+								});
 							}
-
-							textpan.selectAll("span").remove();	
-
-							var spans_u = textpan.selectAll("span").data(text_array);
-							spans_u.exit().remove();
-							var spans = spans_u.enter().append("span").merge(spans_u).style("opacity","0").text(function(txt){return txt});
-
-							spans.transition()
-							.delay(function(d,i){
-								return i*16;
-							}).duration(100)
-							.style("opacity","1")
-							.on("end", function(d,i){
-								if(i==(text_array.length-1)){
-									text_finished = true;
-									next();
-									animate_dots();
-								}
-							})
-							;
-
-							/*var t = -1;
-							var tim;
-							function timback(elapsed){
-								if(++t < text_array.length){
-									//var letter = text_array[t];
-									//textpan.append("span").text(letter).style("opacity","0").transition().duration(100).style("opacity","1");
-									spans.filter(function(d,i){})
-									tim.restart(timback, 10);
-								}
-								else{
-									tim.stop();
-								}
-							}
-							tim = d3.timer(timback, 20);*/
-
-							/*var spans = textpan.selectAll("span").data(text_array);
-							spans.enter().append("span").style("opacity","0")
-										.text(function(d){
-											return d=="|" ? " " : d;
-										})
-										.transition()
-										.delay(function(d,i){
-											return (i*15);
-										})
-										.duration(15)
-										.style("opacity","1")
-										.on("end", function(d,i){
-											if(i==(text_array.length-1)){
-												text_finished = true;
-												animate_dots();
-												next();
-											}
-										})*/
-
-							function animate_dots(){
-
-								var animate = true;
-								
-								if(typeof data.filter==="function"){
-									var sub = dots.filter(data.filter);
-									var psub = paths.filter(data.filter);
-								}
-								else if(!!data.filter){
-									var sub = dots;
-									var psub = paths;
-								}
-								else{
-									//passing a falsy data value for filter will prevent any animation from occurring
-									var animate = false;
-								}
-
-								if(animate){
-									var sub_length = sub.size();
-									var psub_length = psub.size();
-
-									var count = 0;
-
-									sub.transition()
-										.delay(function(d,i){return (sub_length - i)})
-										.duration(duration)
-										.attr("cx", function(d){return d.x})
-										.on("end", function(d,i){
-											if(sub_length === (++count) ){
-												dots_finished = true;
-												next();
-											}
-										})
-										;
-
-									psub.transition()
-										.delay(function(d,i){return (psub_length - i)})
-										.duration(duration)
-										.attr("x2", function(d,i){
-											return d.x;
-										});
-								}
-								else{
-									dots_finished = true;
-									next();
-								}
-							};
-
-						} //case: data not null
+						});
 					}
-
-					return show;
 				}
 
-				var slideshow = scenes(sceneDat);
+				draw();
 
-				waypoint(wrap.node()).activate(function(){
-					slideshow();
-				}).buffer(-0.05, 0.65);	
-
-				
+				var drawtimer;
+				window.addEventListener("resize", function(){
+					clearTimeout(drawtimer);
+					drawtimer = setTimeout(draw, 250);
+				});
 
 			}
-
-		}); //end d3.csv callback
-
-
+		});
 	}
 }
-
-	
-

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="400" width="780" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <marker id="marker5090" refY="0.0" refX="0.0" overflow="visible" orient="auto">
+   <path d="m-2.5-1c0 2.76-2.24 5-5 5s-5-2.24-5-5 2.24-5 5-5 5 2.24 5 5z" fill-rule="evenodd" transform="scale(.4) translate(7.4 1)" stroke="#053769" stroke-width="1pt" fill="#053769"/>
+  </marker>
+  <marker id="marker5038" refY="0.0" refX="0.0" overflow="visible" orient="auto">
+   <path d="m-2.5-1c0 2.76-2.24 5-5 5s-5-2.24-5-5 2.24-5 5-5 5 2.24 5 5z" fill-rule="evenodd" transform="scale(.4) translate(7.4 1)" stroke="#4472c4" stroke-width="1pt" fill="#4472c4"/>
+  </marker>
+  <marker id="DotM" refY="0.0" refX="0.0" overflow="visible" orient="auto">
+   <path d="m-2.5-1c0 2.76-2.24 5-5 5s-5-2.24-5-5 2.24-5 5-5 5 2.24 5 5z" fill-rule="evenodd" transform="scale(.4) translate(7.4 1)" stroke="#a4c7f2" stroke-width="1pt" fill="#a4c7f2"/>
+  </marker>
+ </defs>
+ <g transform="translate(-18.787)">
+  <path d="m681 361.46v-329.76" stroke="#b3b3b3" stroke-width="1px" fill="none"/>
+  <path d="m220 361.46v-329.76" stroke="#b3b3b3" stroke-width="1px" fill="none"/>
+  <g stroke-width="3.9444">
+   <line y2="238.2" marker-end="url(#marker5090)" marker-start="url(#marker5090)" x2="680.75" stroke="#053769" y1="338.62" x1="221.12" fill="#053769"/>
+   <line y2="103.01" marker-end="url(#marker5038)" marker-start="url(#marker5038)" x2="680.75" stroke="#4472c4" y1="147.16" x1="221.12" fill="#4472c4"/>
+   <line y2="202.33" marker-end="url(#DotM)" marker-start="url(#DotM)" x2="680.75" stroke="#a4c7f2" y1="57.77" x1="221.12" fill="#a4c7f2"/>
+  </g>
+  <g font-size="20px" font-family="&apos;liberation sans&apos;">
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal" xml:space="preserve" line-height="25px" y="387.89832" x="199.96611" fill="#4d4d4d"><tspan y="387.89832" x="199.96611">2002</tspan></text>
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal" xml:space="preserve" line-height="25px" y="387.89832" x="654.47455" fill="#4d4d4d"><tspan y="387.89832" x="654.47455">2016</tspan></text>
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;text-anchor:end;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal;text-align:end" xml:space="preserve" line-height="25px" y="8.6813774" x="199.11542" fill="#a4c7f2"><tspan y="26.696466" x="199.11542"/><tspan y="51.696465" x="199.11542">Low digital skills</tspan><tspan y="76.696465" x="199.11542">56%</tspan></text>
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;text-anchor:end;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal;text-align:end" xml:space="preserve" line-height="25px" y="139.56273" x="199.11542" fill="#4472c4"><tspan y="139.56273" x="199.11542">Medium digital skills</tspan><tspan y="164.56273" x="199.11542">40%</tspan></text>
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;text-anchor:end;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal;text-align:end" xml:space="preserve" font-size="20px" line-height="25px" y="332.24167" x="199.11542" font-family="&apos;liberation sans&apos;" fill="#053769"><tspan x="204.66229" y="332.24167">High digital skills </tspan><tspan x="199.11542" y="357.24167">5%</tspan></text>
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;text-anchor:end;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal;text-align:end" xml:space="preserve" line-height="25px" y="166.6503" x="739.08185" fill="#a4c7f2"><tspan y="184.66539" x="739.08185"/><tspan y="209.66539" x="739.08185">30%</tspan></text>
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;text-anchor:end;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal;text-align:end" xml:space="preserve" line-height="25px" y="66.988319" x="739.38458" fill="#4472c4"><tspan y="85.00341" x="739.38458"/><tspan y="110.00341" x="739.38458">48%</tspan></text>
+   <text style="font-variant-ligatures:normal;letter-spacing:0px;font-variant-numeric:normal;text-anchor:end;word-spacing:0px;font-variant-caps:normal;font-feature-settings:normal;text-align:end" xml:space="preserve" line-height="25px" y="201.8056" x="738.83771" fill="#053769"><tspan y="219.82069" x="738.83771"/><tspan y="244.82069" x="738.83771">23%</tspan></text>
+  </g>
+ </g>
+</svg>

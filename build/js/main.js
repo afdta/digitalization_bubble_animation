@@ -1,9 +1,10 @@
 import dir from "../../../js-modules/rackspace.js";
 import degradation from "../../../js-modules/degradation.js";
+import scope from "../../../js-modules/scope.js";
 
 import bubble_graphic from './bubble_graphic.js';
-import opening from './opening.js';
-import add_link_icon from './add_link_icon.js';
+//import opening from './opening.js';
+import add_link_icon from './add_link_icon.js'; 
 
 import forwhom from './forwhom.js';
 
@@ -21,6 +22,10 @@ function main(){
 
   add_link_icon();
 
+  //create some globally scoped variables
+  scope("padding", [45,20,20,70]);
+  scope("plotpad", 35);
+
   //production data
   //dir.add("dirAlias", "rackspace-slug/path/to/dir");
   //dir.add("dirAlias", "rackspace-slug/path/to/dir");
@@ -31,7 +36,7 @@ function main(){
   //browser degradation
   if(compat.browser()){
   
-    opening(document.getElementById("opening-animation"));
+    //opening(document.getElementById("opening-animation"));
     
     bubble_graphic();
 

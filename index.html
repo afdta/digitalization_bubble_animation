@@ -1,28 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="font-size:18px;">
 <head>
   <meta charset="utf-8">
   <title>MPP Interactive Feature</title>
   <meta name="author" content="Alec Friedhoff">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="app.css">
   <script src="app.js" type="text/javascript"></script>
 </head>
 
-<body style="min-height:5000px;padding:0px;margin:0px;">
-<div style="width:100%;height:55vh;background:#000000;margin-bottom:4em;">
-	<p style="color:#ffffff;padding:4em 0em 1em 2rem;margin:0em;">Banner area [Standard report header]</p>
-	<h1 style="color:#ffffff;padding-left:2rem;">Digitalization: A big deal</h1>
-	<div style="padding:2rem">
-		<p style="color:#ffffff">Notes</p>
-		<ul>
-			<li style="color:#ffffff">Colors still in flux. Shades of blue may not be distinct enough.</li>
-			<li style="color:#ffffff">This makes heavy use of linking to PDF. We need to make sure that's a good user experience.</li>
-			<li style="color:#ffffff">Graphics still need annotations, scales, and legends.</li>
-			<li style="color:#ffffff">Concern about length. Split into two pieces? [1] Broad trends and [2] Metro detail</li>
-			<li style="color:#ffffff">Add small graphics to expandable boxes?</li>
-		</ul>
-	</div>
+<body style="min-height:5000px;padding:0px;margin:0px;font-size:18px;min-width:1800px;">
+<div style="width:100%;overflow:visible;height:780px;">
+	<img src="header.png" style="width:100%;height:auto;">
 </div>
 
 <div id="metro-interactive">
@@ -35,51 +24,72 @@
 	</div>
 
 	<div class="big-text-scroll col-center">
-		<p>Select occupations and digital skill level, 2016</p>
+		
 	</div>
 
 
-	<div class="image-wrap" style="margin-bottom:4em;max-width:780px;margin:2rem auto;">
-		<p class="reading" style="font-style:italic;">Workers of every stripe—from corporate finance officers to sales people to machine operators to utility workers and nurses and Uber drivers—are now spending sizable portions of their workdays using tools that require digital skills.</p>
-		<div style="padding:1rem;">
+	<div style="margin:4rem 0rem; border:1px solid #aaaaaa; border-width:1px 0px 0px 0px;" class="c-fix">
+		<div style="float:left" class="col-left">
+			<p class="chart-title" style="margin-left:3rem;margin-bottom:2rem;">Select occupations and digital skill level, 2016</p>
 			<img src="assets/Pinwheel_Large_01.png" />
+		</div>
+		<div style="float:left;max-width:610px;">
+			<p class="reading" style="margin-top:6rem;" >Workers of every stripe—from corporate finance officers to sales people to machine operators to utility workers and nurses and Uber drivers—are now spending sizable portions of their workdays using tools that require digital skills.</p>
+
+			<p class="reading" style="" >We could probably include another paragraph or two of text here. 50 words: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse sodales nunc sapien, id fermentum est rutrum eu. Suspendisse eget urna nec ipsum mattis pretium. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Maecenas diam turpis, tincidunt non augue non, egestas dapibus est. Duis lacinia velit nec.</p>
 		</div>
 	</div>
 
 
 
-	<div class="col-center reading" style="margin-top:4em;">
-		<p style="font-weight:bold;font-size:2em;line-height:1.5em;color:#0d73d6;">The U.S. economy is digitalizing at an extremely rapid pace.</p>
-		<p>Between 2002 and 2016, the shares of U.S. jobs that require substantial digital knowledge rose rapidly, whether because of changes in the digital content of existing occupations or due to shifts in the distribution of occupations.<a href="https://www.brookings.edu/wp-content/uploads/2017/01/metro_test-file2.pdf#page=7" target="_blank" class="blue-link">Read more about the changing U.S. workforce – pointer icon » <span class="link-icon"></span> »</a></p>
+	<div style="margin:4rem 0rem; border:1px solid #aaaaaa; border-width:1px 0px 1px 0px;" class="c-fix">
+		<div style="float:left" class="col-left">
+			<p class="chart-title" style="margin-left:3rem;">Share of jobs in low, medium, and high digital skill occupations</p>
+			<p class="chart-subtitle" style="margin-left:3rem;">2002 and 2016</p>
+			<img src="slope_graph.svg" />
+		</div>
+		<div style="float:left;max-width:610px;width:100%;">
+			<p class="reading" style="margin-top:6rem;">In 2002, 56 percent of the jobs studied required low digital skills. Nearly 40 percent of jobs required medium digital skills and just 5 percent required high digital skills.</p>
+			<p class="reading" style="">A lot has changed. By 2016, the share of jobs requiring high digital skills had jumped to 23 percent. The share requiring medium digital skills rose to 48 percent. And in a huge shift, the share of jobs requiring low digital skills fell from 56 to 30 percent. </p>
+		</div>
 	</div>
 
-	<div id="opening-animation"></div>
 
-	<div class="col-center reading" style="margin-top:4em;">
-		<p style="font-weight:bold;font-size:2em;line-height:1.5em;color:#0d73d6;">The degree and pace of change of digitalization varies widely among occupations and across industries.</p>
-		<p>Digitalization scores rose in 517 of 545 analyzed occupations from 2002 to 2016. The average digitalization score across all occupations rose from a low level of 29 in 2002 to a medium level of 46 in 2016, a 57 percent increase.</p>
-	</div>
+
 	
-	<div id="bubble-growth"></div>
-
-	<div class="col-center reading">
+	<div id="bubble-growth">
+		<div class="col-left">
+			<div style="margin-left:3rem">
+				<p class="chart-title">Digitalization scores rose in 517 of 545 analyzed occupations from 2002 to 2016. At the same time, the degree and pace of change varies widely among occupations.</p>
+				<p>The average digitalization score across all occupations rose from a low level of 29 in 2002 to a medium level of 46 in 2016.</p>
+				<p>[To do: add legend for bubble sizing (jobs in 2016)]</p>
+				<div id="bubble-selection"></div>
+			</div>
+		</div>
+	</div>
+	<div class="col-left reading">
 		<p>Additionally, virtually all industry groups saw their mean digital scores increase from 2002 to 2016, though the degree and speed of digital adoption vary significantly. Leading the digitalization race is a group of broad service sectors, including professional, scientific and technical services (55); media (52); and finance and insurance (55). On the lower end, education, transportation and warehousing, basic goods manufacturing, and construction have scores mostly in the 30s. [Read more about the changing digital scores of diverse industries – pointer icon »]</p>
 	</div>
 
 
-	<div class="col-center reading" style="margin-top:4em;">
-		<p style="font-weight:bold;font-size:2em;line-height:1.5em;color:#0d73d6;">Digitalization is associated with increased pay and job resiliency in the face of automation but also vastly uneven trends for job growth and wages, and presents gender- and race-based challenges.</p>
+	<div style="margin:8rem auto 4rem auto; border-top:1px solid #aaaaaa;">
+		<div class="col-left" style="padding-top:4rem;">
+			<p class="chart-title">Digitalization is associated with increased pay and job resiliency in the face of automation but also vastly uneven trends for job growth and wages, and presents gender- and race-based challenges.</p>
+		</div>
 	</div>
 
 	<div id="forwhom"></div>
 
-	<div class="col-center reading" style="margin-top:4em;">
-		<p style="font-weight:bold;font-size:2em;line-height:1.5em;color:#0d73d6;">Metropolitan area data</p>
+	<div style="margin-top:4em; border-top:1px solid #aaaaaa;">
+		<div class="col-left">
+			<p class="chart-title">Metropolitan area data</p>
 
-		<p>Digitalization is happening everywhere, but its progress varies unevenly across the map. Metropolitan areas’ current wage levels and recent wage growth appear to be highly correlated with mean digitalization scores. Additionally, metros are diverging in their digitalization ratings: the higher (or lower) a metro area’s 2002 share of high-level digital occupations, the greater (or lesser) the growth of its share of jobs in such occupations in the years 2002 to 2016. Read more about the variance in regional digital performance »</p>
+			<div class="reading">
+				<p>Digitalization is happening everywhere, but its progress varies unevenly across the map. Metropolitan areas’ current wage levels and recent wage growth appear to be highly correlated with mean digitalization scores. Additionally, metros are diverging in their digitalization ratings: the higher (or lower) a metro area’s 2002 share of high-level digital occupations, the greater (or lesser) the growth of its share of jobs in such occupations in the years 2002 to 2016. Read more about the variance in regional digital performance »</p>
 
-		<p>[Metro-map. Note: this is an example from the recent water report. The digitalization map will likely use this template.]</p>
-
+				<p>[Metro-map. Note: this is an example from the recent water report. The digitalization map will likely use this template.]</p>
+			</div>
+		</div>
 	</div>
 
 	<div id="metro-map"></div>
