@@ -23,8 +23,8 @@ function main(){
   add_link_icon();
 
   //create some globally scoped variables
-  scope("padding", [45,20,20,70]);
-  scope("plotpad", 35);
+  scope("padding", [35,20,20,80]);
+  scope("plotpad", [30,0,25,25]);
 
   //production data
   //dir.add("dirAlias", "rackspace-slug/path/to/dir");
